@@ -1,3 +1,5 @@
+<img alt="SysMon banner" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=240&section=header&text=SysMon&fontSize=64&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-time%20system%20monitor%20for%20Windows%20%7C%20CPU%20%C2%B7%20GPU%20%C2%B7%20RAM%20%C2%B7%20Network%20%C2%B7%20Temps&descAlignY=60&descSize=18" width="100%"/>
+
 <div align="center">
 
 # 🖥️ SysMon
