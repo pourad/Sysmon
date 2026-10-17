@@ -1,5 +1,5 @@
 <div align="center">
-
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=220&section=header&text=Hi%20There%20👋%20I'm%20Pouria&fontSize=42&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Independent%20Developer%20%7C%20Building%20things%20on%20my%20own%20terms&descAlignY=55&descSize=18" width="100%"/>
 # 🖥️ SysMon
 
 **A lightweight, real-time system monitor for Windows — CPU, GPU, RAM, network and temperatures in one clean dashboard.**
