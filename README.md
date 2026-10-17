@@ -1,11 +1,19 @@
 <img alt="SysMon banner" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=240&section=header&text=System-Monitor&fontSize=64&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-time%20system%20monitor%20for%20Windows%20%7C%20CPU%20%C2%B7%20GPU%20%C2%B7%20RAM%20%C2%B7%20Network%20%C2%B7%20Temps&descAlignY=60&descSize=18" width="100%"/>
-
 <div align="center">
-
 # 🖥️ SysMon
 
 **A lightweight, real-time system monitor for Windows — CPU, GPU, RAM, network and temperatures in one clean dashboard.**
 
+[![Latest release](https://img.shields.io/github/v/release/pourad/Sysmon?label=release&color=3fb950)](https://github.com/pourad/Sysmon/releases/latest)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-388bfd)
+![UI](https://img.shields.io/badge/UI-Flutter-02569B)
+![Backend](https://img.shields.io/badge/backend-Python-3776AB)
+
+[Features](#-features) · [How it works](#-how-it-works) · [Install](#-installation) · [Temperatures](#-temperatures) · [Updates](#-automatic-updates) · [Build](#-building-from-source) · [Troubleshooting](#-troubleshooting)
+
+</div>
+
+---
 
 ## 📖 Overview
 
