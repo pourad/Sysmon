@@ -25,10 +25,12 @@ import 'pages/network_page.dart';
 import 'pages/ram_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/temps_page.dart';
+import 'backend_launcher.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  monitor.start(); // شروع گرفتن آمار از بک‌اند
+  await BackendLauncher.start();
+  monitor.start();
   runApp(const SysMonApp());
 }
 
