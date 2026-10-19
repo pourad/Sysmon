@@ -21,7 +21,7 @@ If you may like the project,you can give it a **STAR**⭐️
 
 ## 📖 Overview
 
-SysMon shows what your computer is doing **right now** and warns you when something goes wrong.
+SysMon <sub> (sysmon formerly known as system monitor) </sub> shows what your computer is doing **right now** and warns you when something goes wrong.
 
 It started as a small Python/Tkinter script and was rebuilt with a **Flutter** interface, so the look and feel can be redesigned freely. The part that reads the hardware stays in **Python** (`psutil`, `pynvml`), because a UI framework cannot read CPU/GPU counters on its own.
 
