@@ -14,6 +14,10 @@
 </div>
 
 ---
+## 🔴Quick Tip
+You may use this program or modify it, provided that you cite the source. Copying it without citing the source may lead to **legal consequences**.
+
+If you may like the project,you can give it a **STAR**⭐️
 
 ## 📖 Overview
 
