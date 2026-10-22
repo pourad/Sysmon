@@ -14,7 +14,10 @@
 //    3) اینجا توی _pages اضافه‌اش کن
 //    4) توی _navItems یک آیکون و اسم براش بذار
 // ════════════════════════════════════════════════════════════════════════════
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
+import 'backend_launcher.dart';
 import 'config.dart';
 import 'controller.dart';
 import 'pages/cpu_page.dart';
@@ -25,12 +28,29 @@ import 'pages/network_page.dart';
 import 'pages/ram_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/temps_page.dart';
-import 'backend_launcher.dart';
+import 'widgets/title_bar.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await BackendLauncher.start();
-  monitor.start();
+
+  // نوار پیش‌فرض ویندوز رو مخفی می‌کنیم (نوار هم‌رنگ خودمون: widgets/title_bar.dart)
+  if (Platform.isWindows) {
+    await windowManager.ensureInitialized();
+    const options = WindowOptions(
+      size: Size(1100, 720), // اندازه‌ی اولیه‌ی پنجره
+      minimumSize: Size(900, 600), // کوچک‌تر از این نمی‌شه
+      center: true,
+      title: 'SysMon',
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    await windowManager.waitUntilReadyToShow(options, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
+  await BackendLauncher.start(); // فقط توی نسخه‌ی .exe کار می‌کنه
+  monitor.start(); // شروع گرفتن آمار از بک‌اند
   runApp(const SysMonApp());
 }
 
@@ -100,29 +120,40 @@ class HomeShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
+      body: Column(
         children: [
-          const _Sidebar(),
+          // ⭐ نوار بالای پنجره (هم‌رنگ برنامه)
+          const AppTitleBar(),
           Expanded(
-            child: ListenableBuilder(
-              listenable: monitor,
-              builder: (context, _) {
-                return Column(
-                  children: [
-                    if (monitor.bannerText != null)
-                      _AlertBanner(
-                          text: monitor.bannerText!, color: monitor.bannerColor),
-                    Expanded(
-                      // IndexedStack همه‌ی صفحه‌ها رو نگه می‌داره و فقط یکی رو نشون می‌ده
-                      // (برای همین اسلایدرهای Settings با عوض کردن تب پاک نمی‌شن)
-                      child: IndexedStack(
-                        index: monitor.tab.index,
-                        children: [for (final t in AppTab.values) _pages[t]!],
-                      ),
-                    ),
-                  ],
-                );
-              },
+            child: Row(
+              children: [
+                const _Sidebar(),
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: monitor,
+                    builder: (context, _) {
+                      return Column(
+                        children: [
+                          if (monitor.bannerText != null)
+                            _AlertBanner(
+                                text: monitor.bannerText!,
+                                color: monitor.bannerColor),
+                          Expanded(
+                            // IndexedStack همه‌ی صفحه‌ها رو نگه می‌داره و فقط یکی رو نشون می‌ده
+                            // (برای همین اسلایدرهای Settings با عوض کردن تب پاک نمی‌شن)
+                            child: IndexedStack(
+                              index: monitor.tab.index,
+                              children: [
+                                for (final t in AppTab.values) _pages[t]!
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],

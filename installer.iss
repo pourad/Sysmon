@@ -5,7 +5,7 @@
 ; AppId باید همیشه ثابت بمونه تا نسخه‌ی جدید روی نسخه‌ی قبلی نصب بشه (آپدیت)، نه کنارش
 AppId={{AFFD5EC7-BA14-452F-901F-CC170F899ABF}
 AppName=SysMon
-AppVersion=1.0.0
+AppVersion=1.0.1
 AppPublisher=SysMon
 DefaultDirName={autopf}\SysMon
 DefaultGroupName=SysMon
@@ -18,6 +18,7 @@ PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\sysmon_flutter.exe
+SetupIconFile=windows\runner\resources\app_icon.ico
 
 [Files]
 Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion

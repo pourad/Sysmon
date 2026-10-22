@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 ///    و توی بک‌اند HOST رو "0.0.0.0" کن.
 const String kBaseUrl = 'http://127.0.0.1:8765';
 
-const String kAppVersion = '1.0.0';
+const String kAppVersion = '1.0.1';
 
 /// ریپازیتوری گیت‌هاب برای آپدیت: 'نام‌کاربری/نام‌ریپو' (باید public باشه)
 const String kGithubRepo = 'pourad/Sysmon';

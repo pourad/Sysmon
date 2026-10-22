@@ -1,7 +1,7 @@
 name: sysmon_flutter
 description: System Monitor - Flutter UI for the Python backend.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   http: ^1.2.0        # فقط برای صحبت با بک‌اند پایتون
   crypto: ^3.0.3
+  window_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +19,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/icon.png
