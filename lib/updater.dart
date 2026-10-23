@@ -48,6 +48,18 @@ class Updater extends ChangeNotifier {
   UpdateInfo? info;
   double progress = 0; // 0 تا 1 موقع دانلود
 
+  /// بنر «آپدیت اومده» بالای برنامه (فقط بعد از چک خودکار موقع باز شدن برنامه)
+  bool noticeVisible = false;
+  bool _inFlight = false;
+
+  /// نسخه‌ی جدید پیدا شده و هنوز نصب نشده؟
+  bool get hasUpdate => info != null && status == UpdateStatus.available;
+
+  void dismissNotice() {
+    noticeVisible = false;
+    notifyListeners();
+  }
+
   bool get busy =>
       status == UpdateStatus.checking ||
       status == UpdateStatus.downloading ||
@@ -65,15 +77,26 @@ class Updater extends ChangeNotifier {
   // ══════════════════════════════════════════════════════════════════════════
   //  ۱) بررسی نسخه‌ی جدید
   // ══════════════════════════════════════════════════════════════════════════
-  Future<void> check() async {
-    if (busy) return;
+  /// silent = true: چک بی‌صدا (موقع باز شدن برنامه). فقط اگه نسخه‌ی جدید باشه چیزی نشون
+  /// می‌ده (بنر + نقطه کنار Settings). خطا و «آخرین نسخه رو داری» رو نشون نمی‌ده.
+  Future<void> check({bool silent = false}) async {
+    if (busy || _inFlight) return;
+    _inFlight = true;
+    try {
+      await _check(silent);
+    } finally {
+      _inFlight = false;
+    }
+  }
+
+  Future<void> _check(bool silent) async {
     if (!repoConfigured) {
-      _set(UpdateStatus.error, 'First set kGithubRepo in lib/config.dart.');
+      if (!silent) _set(UpdateStatus.error, 'First set kGithubRepo in lib/config.dart.');
       return;
     }
     info = null;
     progress = 0;
-    _set(UpdateStatus.checking, 'Checking for updates…');
+    if (!silent) _set(UpdateStatus.checking, 'Checking for updates…');
 
     try {
       final r = await http.get(
@@ -85,12 +108,12 @@ class Updater extends ChangeNotifier {
       ).timeout(const Duration(seconds: 15));
 
       if (r.statusCode == 404) {
-        _set(UpdateStatus.error,
+        if (!silent) _set(UpdateStatus.error,
             'No release found. The repository must be public and have a published release.');
         return;
       }
       if (r.statusCode != 200) {
-        _set(UpdateStatus.error, 'GitHub answered with error ${r.statusCode}.');
+        if (!silent) _set(UpdateStatus.error, 'GitHub answered with error ${r.statusCode}.');
         return;
       }
 
@@ -98,7 +121,7 @@ class Updater extends ChangeNotifier {
       final tag = (j['tag_name'] as String?) ?? '';
 
       if (!_isNewer(tag, kAppVersion)) {
-        _set(UpdateStatus.upToDate, 'You have the latest version (v$kAppVersion).');
+        if (!silent) _set(UpdateStatus.upToDate, 'You have the latest version (v$kAppVersion).');
         return;
       }
 
@@ -115,7 +138,7 @@ class Updater extends ChangeNotifier {
         }
       }
       if (pick == null) {
-        _set(UpdateStatus.error,
+        if (!silent) _set(UpdateStatus.error,
             'Version $tag exists, but its release has no .exe installer attached.');
         return;
       }
@@ -140,8 +163,12 @@ class Updater extends ChangeNotifier {
       );
       _set(UpdateStatus.available,
           'Version $tag is available (you have v$kAppVersion).');
+      if (silent) {
+        noticeVisible = true; // بنر بالای برنامه رو نشون بده
+        notifyListeners();
+      }
     } catch (e) {
-      _set(UpdateStatus.error, 'Could not check for updates: $e');
+      if (!silent) _set(UpdateStatus.error, 'Could not check for updates: $e');
     }
   }
 
@@ -163,6 +190,7 @@ class Updater extends ChangeNotifier {
     }
 
     progress = 0;
+    noticeVisible = false;
     _set(UpdateStatus.downloading, 'Downloading ${i.version}…');
     final client = http.Client();
     try {

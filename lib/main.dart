@@ -28,6 +28,7 @@ import 'pages/network_page.dart';
 import 'pages/ram_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/temps_page.dart';
+import 'updater.dart';
 import 'widgets/title_bar.dart';
 
 Future<void> main() async {
@@ -52,6 +53,16 @@ Future<void> main() async {
   await BackendLauncher.start(); // فقط توی نسخه‌ی .exe کار می‌کنه
   monitor.start(); // شروع گرفتن آمار از بک‌اند
   runApp(const SysMonApp());
+
+  // چند ثانیه بعد از باز شدن برنامه، بی‌صدا چک کن نسخه‌ی جدید اومده یا نه
+  Future.delayed(const Duration(seconds: 6), _checkUpdateOnStart);
+}
+
+Future<void> _checkUpdateOnStart() async {
+  await updater.check(silent: true);
+  if (updater.hasUpdate) {
+    monitor.logEvent('Update available: ${updater.info!.version}', LogTag.info);
+  }
 }
 
 class SysMonApp extends StatelessWidget {
@@ -130,10 +141,13 @@ class HomeShell extends StatelessWidget {
                 const _Sidebar(),
                 Expanded(
                   child: ListenableBuilder(
-                    listenable: monitor,
+                    listenable: Listenable.merge([monitor, updater]),
                     builder: (context, _) {
                       return Column(
                         children: [
+                          // بنر «آپدیت اومده» (بعد از چک خودکار موقع باز شدن)
+                          if (updater.noticeVisible && updater.info != null)
+                            _UpdateBanner(version: updater.info!.version),
                           if (monitor.bannerText != null)
                             _AlertBanner(
                                 text: monitor.bannerText!,
@@ -154,6 +168,47 @@ class HomeShell extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── بنر «نسخه‌ی جدید اومده» ──────────────────────────────────────────────────
+class _UpdateBanner extends StatelessWidget {
+  const _UpdateBanner({required this.version});
+
+  final String version;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: AppColors.blue,
+      padding: const EdgeInsets.fromLTRB(14, 4, 10, 4),
+      child: Row(
+        children: [
+          const Icon(Icons.system_update_alt, size: 16, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text('A new version of SysMon is available ($version).',
+                style: const TextStyle(fontSize: 12, color: Colors.white)),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            onPressed: () {
+              updater.dismissNotice();
+              monitor.setTab(AppTab.settings); // کارت Updates همون‌جاست
+            },
+            child: const Text('Update'),
+          ),
+          InkWell(
+            onTap: updater.dismissNotice,
+            child: const Padding(
+              padding: EdgeInsets.all(6),
+              child: Icon(Icons.close, size: 16, color: Colors.white),
             ),
           ),
         ],
@@ -200,7 +255,7 @@ class _Sidebar extends StatelessWidget {
     return SizedBox(
       width: 180,
       child: ListenableBuilder(
-        listenable: monitor,
+        listenable: Listenable.merge([monitor, updater]),
         builder: (context, _) {
           return Material(
             color: AppColors.card,
@@ -302,6 +357,16 @@ class _Sidebar extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 12,
                         color: active ? AppColors.text1 : AppColors.text2)),
+                // نقطه‌ی نارنجی کنار Settings وقتی نسخه‌ی جدید هست
+                if (item.tab == AppTab.settings && updater.hasUpdate) ...[
+                  const Spacer(),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration:
+                        BoxDecoration(color: AppColors.warn, shape: BoxShape.circle),
+                  ),
+                ],
               ],
             ),
           ),
