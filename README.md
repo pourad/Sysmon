@@ -317,7 +317,7 @@ sysmon/
 
 ---
 
-## Credits [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
+## Credits <p></p> [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
 
 · Feedback and ideas are welcome via [Issues](https://github.com/pourad/Sysmon/issues)
 
