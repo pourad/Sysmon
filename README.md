@@ -325,6 +325,13 @@ sysmon/
 - [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
 - [Inno Setup](https://jrsoftware.org/isinfo.php) — installer
 
+---
+
+## 📄 License
+
+  Released under the [MIT License](LICENSE).
+
+
 <div align="center">
 
 Made with Flutter and Python · Feedback and ideas are welcome via [Issues](https://github.com/pourad/Sysmon/issues)
