@@ -317,8 +317,9 @@ sysmon/
 
 ---
 
-## 🙏 Credits
+## Credits <p></p> [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
 
+<<<<<<< HEAD
 - [Flutter](https://flutter.dev) — user interface
 - [psutil](https://github.com/giampaolo/psutil) — CPU, memory, disk and network data
 - [pynvml / nvidia-ml-py](https://pypi.org/project/nvidia-ml-py/) — NVIDIA GPU data
@@ -335,5 +336,8 @@ sysmon/
 <div align="center">
 
 Made with Flutter and Python · Feedback and ideas are welcome via [Issues](https://github.com/pourad/Sysmon/issues)
+=======
+· Feedback and ideas are welcome via [Issues](https://github.com/pourad/Sysmon/issues)
+>>>>>>> c65a68e4564b6860d268f046c4132b91ca01210e
 
 </div>
