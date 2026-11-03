@@ -7,6 +7,7 @@ import '../config.dart';
 import '../controller.dart';
 import '../stats.dart';
 import '../widgets/common.dart';
+import '../widgets/net_test_card.dart';
 import '../widgets/spark.dart';
 
 class NetworkPage extends StatelessWidget {
@@ -29,6 +30,11 @@ class NetworkPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const PageTitle('Network Detail'),
+
+              // ⭐ تست کیفیت اینترنت (مثل Cloudflare). عمداً بدون const تا با تغییر تم رنگش آپدیت بشه
+              NetTestCard(),
+              const SizedBox(height: 12),
+
               CardRow(children: [
                 _speedCard('▼  DOWNLOAD', AppColors.blue, s?.netDown),
                 _speedCard('▲  UPLOAD', AppColors.ok, s?.netUp),

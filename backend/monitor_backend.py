@@ -399,6 +399,12 @@ def open_log_file():
         return False
 
 
+try:
+    from netquality import NetQuality      # تست کیفیت اینترنت (فایل netquality.py کنار این فایل)
+    net_quality = NetQuality()
+except Exception:                          # اگه فایل نبود، بقیه‌ی برنامه عادی کار می‌کنه
+    net_quality = None
+
 watcher = Watcher()
 temp_reader = TempReader()
 collector = Collector()
@@ -491,6 +497,12 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, top_processes())
             elif self.path == "/health":
                 self._send(200, {"ok": True})
+            elif self.path == "/nettest/status":
+                if net_quality is None:
+                    self._send(200, {"state": "unavailable",
+                                     "message": "netquality.py is missing next to monitor_backend.py"})
+                else:
+                    self._send(200, net_quality.status())
             else:
                 self._send(404, {"error": "not found"})
         except Exception as e:
@@ -511,6 +523,16 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, {"ok": True})
             elif self.path == "/open-log":
                 self._send(200, {"ok": open_log_file()})
+            elif self.path == "/nettest/start":
+                if net_quality is None:
+                    self._send(200, {"ok": False, "error": "netquality.py is missing next to monitor_backend.py"})
+                else:
+                    ok = net_quality.start(str(body.get("mode", "quick")))
+                    self._send(200, {"ok": ok, "error": None if ok else "A test is already running"})
+            elif self.path == "/nettest/cancel":
+                if net_quality is not None:
+                    net_quality.cancel()
+                self._send(200, {"ok": True})
             else:
                 self._send(404, {"error": "not found"})
         except Exception as e:

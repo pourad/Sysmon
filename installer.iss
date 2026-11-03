@@ -5,7 +5,7 @@
 ; AppId باید همیشه ثابت بمونه تا نسخه‌ی جدید روی نسخه‌ی قبلی نصب بشه (آپدیت)، نه کنارش
 AppId={{AFFD5EC7-BA14-452F-901F-CC170F899ABF}
 AppName=SysMon
-AppVersion=1.1.0
+AppVersion=1.2.0
 AppPublisher=SysMon
 DefaultDirName={autopf}\SysMon
 DefaultGroupName=SysMon

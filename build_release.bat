@@ -11,7 +11,7 @@ echo.
 echo [1/5] Building the Python backend (PyInstaller)...
 pushd backend
 python -m pip install pyinstaller psutil pynvml || goto :fail
-python -m PyInstaller --noconfirm --onedir --noconsole --name monitor_backend --hidden-import pynvml monitor_backend.py || goto :fail
+python -m PyInstaller --noconfirm --onedir --noconsole --name monitor_backend --hidden-import pynvml --hidden-import netquality monitor_backend.py || goto :fail
 popd
 
 echo.
