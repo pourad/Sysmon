@@ -1,5 +1,6 @@
 <img alt="SysMon banner" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=240&section=header&text=System-Monitor&fontSize=64&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-time%20system%20monitor%20for%20Windows%20%7C%20CPU%20%C2%B7%20GPU%20%C2%B7%20RAM%20%C2%B7%20Network%20%C2%B7%20Temps&descAlignY=60&descSize=18" width="100%"/>
 <div align="center">
+
 # 🖥️ SysMon
 
 **A lightweight, real-time system monitor for Windows — CPU, GPU, RAM, network and temperatures in one clean dashboard.**
@@ -9,7 +10,9 @@
 ![UI](https://img.shields.io/badge/UI-Flutter-02569B)
 ![Backend](https://img.shields.io/badge/backend-Python-3776AB)
 
-[Features](#-features) · [How it works](#-how-it-works) · [Install](#-installation) · [Temperatures](#-temperatures) · [Updates](#-automatic-updates) · [Build](#-building-from-source) · [Troubleshooting](#-troubleshooting)
+[Features](#-features) · [How it works](#-how-it-works) · [Install](#-installation) · [Network test](#-internet-quality-test) · [Temperatures](#-temperatures) · [Updates](#-automatic-updates) · [Build](#-building-from-source) · [Troubleshooting](#-troubleshooting)
+
+**English** · [فارسی](README.fa.md)
 
 </div>
 
@@ -29,9 +32,10 @@ It started as a small Python/Tkinter script and was rebuilt with a **Flutter** i
 
 - Live charts and gauges for CPU, GPU, RAM and network
 - Temperature tracking for **CPU, GPU and SSD** with min / average / max
+- An **internet quality test** (speed, latency, jitter, latency under load, packet loss) modelled on Cloudflare's speed test
 - Alerts when usage crosses your thresholds, plus a log file for later review
 - A process watcher that tells you when an app closes or crashes
-- Light and dark themes
+- Light and dark themes and a title bar that matches the app colours
 - One-click updates straight from GitHub Releases
 
 <!--
@@ -56,7 +60,7 @@ It started as a small Python/Tkinter script and was rebuilt with a **Flutter** i
 | **CPU** | Usage gauge, 1-minute average, frequency, logical and physical cores, process count, a usage bar for every core, history chart |
 | **GPU** | Usage, temperature, memory used / total, fan speed, history chart (NVIDIA GPUs) |
 | **RAM** | Usage, total / used / available memory, swap, history chart, and the top processes by memory |
-| **Network** | Download and upload speed (Mbps), history, total data transferred, active interface, packet counters |
+| **Network** | Download and upload speed (Mbps), history, total data transferred, active interface, packet counters, and an **Internet quality test** |
 | **Temps** | CPU, GPU and SSD temperature with **MIN / AVG / MAX**, colour-coded status, history chart and a reset button |
 | **Log** | Live event log (alerts, warnings, crashes). Open the log file or clear the view |
 | **Settings** | Alert thresholds, logging thresholds, cooldown, refresh interval, reset to defaults, and update check |
@@ -66,7 +70,8 @@ It started as a small Python/Tkinter script and was rebuilt with a **Flutter** i
 - **Smart alerts** — a banner appears when CPU, RAM or GPU reaches the critical level. A cooldown prevents alert spam.
 - **Process watcher** — type a process name or PID. If it disappears, SysMon shows a crash alert and records it.
 - **Colour-coded values** — green, yellow and red follow your thresholds everywhere (gauges, bars, temperatures).
-- **Light / dark mode** — switch with the button at the bottom of the sidebar.
+- **Light / dark mode** — switch with the button at the bottom of the sidebar. The window title bar follows the theme.
+- **Update banner** — a few seconds after start, SysMon quietly checks GitHub and shows a banner if a new version exists.
 - **Reset to defaults** — with a confirmation dialog, so settings are never reset by accident.
 - **Offline indicator** — the dashboard shows `● Live` or `● Offline` so you always know whether data is arriving.
 
@@ -107,8 +112,32 @@ The backend listens on `127.0.0.1:8765`.
 | `POST` | `/unwatch` | Stop watching |
 | `POST` | `/log` | Append a line to the log file — body `{"msg": "..."}` |
 | `POST` | `/open-log` | Open the log file with the default editor |
+| `POST` | `/nettest/start` | Start the internet quality test — body `{"mode": "quick"}` or `"full"` |
+| `POST` | `/nettest/cancel` | Cancel the running test |
+| `GET` | `/nettest/status` | Progress, live values and the final result of the test |
 
 </details>
+
+---
+
+## 🌐 Internet quality test
+
+On the **Network** page, press **Start test** to measure your real connection, using the same method as [Cloudflare's speed test](https://speed.cloudflare.com):
+
+| Metric | How it is measured |
+|---|---|
+| **Download / Upload** | Files of growing size from Cloudflare's edge; the result is the 90th percentile of the per-request speeds, with the server's own processing time subtracted |
+| **Latency / Jitter** | 20 tiny requests; latency is the median time to first byte, jitter is the average difference between consecutive samples |
+| **Loaded latency** | Latency measured *while* downloading and uploading — exposes bufferbloat, the main cause of lag when someone else is using the line |
+| **UDP loss** | 50–200 DNS queries to 1.1.1.1 over UDP (a stand-in for Cloudflare's WebRTC loss test) |
+
+The results are turned into ratings — **Streaming, Gaming, Video calls, Web browsing** — from *Bad* to *Great*, and each rating says which metric limits it.
+
+- **Quick** (default): about 25 seconds and up to ~100 MB; accurate up to roughly 300 Mbps.
+- **Full**: Cloudflare's complete ramp-up (up to 250 MB files) for very fast lines; can use up to ~1 GB.
+- The test never starts by itself and can be cancelled at any time.
+- Ratings use SysMon's own thresholds (`compute_scores` in `backend/netquality.py`); they are estimates, not Cloudflare's official scores.
+- The test connects directly (it ignores system proxies), so it measures your actual line.
 
 ---
 
@@ -201,6 +230,8 @@ Open **Settings → Updates → Check for updates**.
 4. SysMon checks the file size (and the SHA-256 checksum when GitHub provides one), then starts the installer.
 5. The installer closes SysMon, replaces the files and starts the new version.
 
+SysMon also checks quietly a few seconds after it starts. If a new version exists, a blue banner appears at the top and a dot appears next to **Settings**; the **Update** button opens the Updates card.
+
 Only files from this repository are accepted.
 
 <details>
@@ -267,6 +298,7 @@ See [`BUILD.md`](BUILD.md) for the full guide, including the Administrator manif
 | The look of every button | `lib/widgets/common.dart` → `AppButton` |
 | The layout of one page | its file in `lib/pages/` |
 | How temperatures are read | `backend/monitor_backend.py` → `TempReader` |
+| The internet test and its ratings | `backend/netquality.py` → `compute_scores` |
 
 ---
 
@@ -275,7 +307,8 @@ See [`BUILD.md`](BUILD.md) for the full guide, including the Administrator manif
 ```
 sysmon/
 ├── backend/
-│   └── monitor_backend.py      Hardware reader + local HTTP server (no GUI)
+│   ├── monitor_backend.py      Hardware reader + local HTTP server (no GUI)
+│   └── netquality.py           Cloudflare-style internet quality test engine
 ├── lib/
 │   ├── main.dart               App start, sidebar, alert banner
 │   ├── config.dart             Colours, text styles, defaults, version, repo
@@ -285,6 +318,7 @@ sysmon/
 │   ├── temp_tracker.dart       Temperature min / avg / max tracking
 │   ├── updater.dart            GitHub release check, download and install
 │   ├── backend_launcher.dart   Starts the backend in the installed app
+│   ├── net_quality.dart        Internet quality test controller
 │   ├── widgets/                Reusable UI pieces (cards, buttons, gauge, charts)
 │   └── pages/                  One file per page
 ├── build_release.bat           Builds the app and backend
@@ -303,6 +337,8 @@ sysmon/
 | CPU or SSD temperature shows **N/A** | LibreHardwareMonitor is not running as Administrator, or its Remote Web Server is off. |
 | Update check says **No release found** | The repository must be public and the release must be published (not a draft or pre-release). |
 | Update check fails with a connection error | GitHub is unreachable — check your internet connection, VPN or proxy. |
+| Internet test says **Could not reach speed.cloudflare.com** | Cloudflare is unreachable. The test connects directly and ignores system proxies — check your connection or VPN. |
+| Internet test says **This backend has no network test** | An old backend is running. Update `monitor_backend.py`, add `netquality.py` next to it and restart the backend. |
 | Windows warns about an unknown publisher | The installer is unsigned. Use **More info → Run anyway**. |
 | Antivirus flags the app | Packaged Python programs are sometimes flagged by mistake. Add an exception or report it as a false positive. |
 
@@ -317,27 +353,22 @@ sysmon/
 
 ---
 
-## Credits <p></p> [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
+## 🙏 Credits
 
-<<<<<<< HEAD
 - [Flutter](https://flutter.dev) — user interface
 - [psutil](https://github.com/giampaolo/psutil) — CPU, memory, disk and network data
 - [pynvml / nvidia-ml-py](https://pypi.org/project/nvidia-ml-py/) — NVIDIA GPU data
 - [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
-- [Inno Setup](https://jrsoftware.org/isinfo.php) — installer
+- [Cloudflare speed test](https://speed.cloudflare.com) — the measurement method of the internet quality test
 
 ---
 
 ## 📄 License
 
-  Released under the [MIT License](LICENSE).
-
+Released under the [MIT License](LICENSE).
 
 <div align="center">
 
 Made with Flutter and Python · Feedback and ideas are welcome via [Issues](https://github.com/pourad/Sysmon/issues)
-=======
-· Feedback and ideas are welcome via [Issues](https://github.com/pourad/Sysmon/issues)
->>>>>>> c65a68e4564b6860d268f046c4132b91ca01210e
 
 </div>
