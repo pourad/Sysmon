@@ -28,6 +28,7 @@ Name: "{group}\SysMon"; Filename: "{app}\sysmon_flutter.exe"
 Name: "{autodesktop}\SysMon"; Filename: "{app}\sysmon_flutter.exe"
 
 [Run]
-Filename: "{app}\sysmon_flutter.exe"; Description: "Launch SysMon"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\sysmon_flutter.exe"; Description: "Launch SysMon"; Flags: nowait postinstall skipifsilent shellexec
+Filename: "{app}\sysmon_flutter.exe"; Flags: nowait shellexec; Check: WizardSilent
 ; بعد از آپدیت خودکار (نصب بی‌صدا) برنامه دوباره باز بشه
 Filename: "{app}\sysmon_flutter.exe"; Flags: nowait; Check: WizardSilent
