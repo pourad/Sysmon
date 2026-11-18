@@ -18,7 +18,7 @@ class RamPage extends StatelessWidget {
       listenable: monitor,
       builder: (context, _) {
         final Stats? s = monitor.stats;
-        final st = monitor.settings;
+        final st = monitor.active; // توی حالت گیمینگ آستانه‌های بالاتر
 
         String gb(double? v) => v == null ? '—' : '${v.toStringAsFixed(1)} GB';
 

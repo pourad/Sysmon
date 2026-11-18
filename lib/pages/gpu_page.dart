@@ -18,7 +18,7 @@ class GpuPage extends StatelessWidget {
       listenable: monitor,
       builder: (context, _) {
         final Stats? s = monitor.stats;
-        final st = monitor.settings;
+        final st = monitor.active; // توی حالت گیمینگ آستانه‌های بالاتر
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),

@@ -42,7 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
       listenable: monitor,
       builder: (context, _) {
         final Stats? s = monitor.stats; // قبل از اولین پاسخ null هست
-        final st = monitor.settings;
+        final st = monitor.active; // توی حالت گیمینگ آستانه‌های بالاتر
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -106,6 +106,26 @@ class _DashboardPageState extends State<DashboardPage> {
     return Row(
       children: [
         Text('Dashboard', style: AppText.title),
+        // نشانگر حالت گیمینگ
+        if (monitor.gaming.enabled) ...[
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.blue.withAlpha(40),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.sports_esports, size: 13, color: AppColors.blue),
+                const SizedBox(width: 4),
+                Text('Gaming mode',
+                    style: TextStyle(fontSize: 11, color: AppColors.blue)),
+              ],
+            ),
+          ),
+        ],
         const Spacer(),
         Text(clock, style: AppText.caption),
         const SizedBox(width: 12),
@@ -125,7 +145,7 @@ class _DashboardPageState extends State<DashboardPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
-            child: Text('⚠ last 60s', style: AppText.caption),
+            child: Text('CPU  /  GPU  /  RAM  — last 60s', style: AppText.caption),
           ),
           _sparkRow('CPU', s == null ? '—' : '${s.cpu.toStringAsFixed(0)}%',
               monitor.cpuHistory, AppColors.ok, 80),

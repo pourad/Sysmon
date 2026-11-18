@@ -35,6 +35,7 @@ It started as a small Python/Tkinter script and was rebuilt with a **Flutter** i
 - An **internet quality test** (speed, latency, jitter, latency under load, packet loss) modelled on Cloudflare's speed test
 - Alerts when usage crosses your thresholds, plus a log file for later review
 - A process watcher that tells you when an app closes or crashes
+- A **gaming mode** that raises the alert limits while you play, so a heavy game does not cause false alarms
 - Light and dark themes and a title bar that matches the app colours
 - One-click updates straight from GitHub Releases
 
@@ -63,7 +64,7 @@ It started as a small Python/Tkinter script and was rebuilt with a **Flutter** i
 | **Network** | Download and upload speed (Mbps), history, total data transferred, active interface, packet counters, and an **Internet quality test** |
 | **Temps** | CPU, GPU and SSD temperature with **MIN / AVG / MAX**, colour-coded status, history chart and a reset button |
 | **Log** | Live event log (alerts, warnings, crashes). Open the log file or clear the view |
-| **Settings** | Alert thresholds, logging thresholds, cooldown, refresh interval, reset to defaults, and update check |
+| **Settings** | Alert thresholds, **gaming mode**, logging thresholds, cooldown, refresh interval, reset to defaults, and update check |
 
 ### Highlights
 
@@ -72,6 +73,7 @@ It started as a small Python/Tkinter script and was rebuilt with a **Flutter** i
 - **Colour-coded values** — green, yellow and red follow your thresholds everywhere (gauges, bars, temperatures).
 - **Light / dark mode** — switch with the button at the bottom of the sidebar. The window title bar follows the theme.
 - **Update banner** — a few seconds after start, SysMon quietly checks GitHub and shows a banner if a new version exists.
+- **Gaming mode** — a switch in Settings. While it is on, SysMon uses higher limits for CPU, RAM and GPU, so a heavy game does not trigger false alarms or fill the log. Alerts are not switched off: if usage crosses the gaming limits, you still get a banner. A small *Gaming mode* badge shows on the dashboard while it is active.
 - **Reset to defaults** — with a confirmation dialog, so settings are never reset by accident.
 - **Offline indicator** — the dashboard shows `● Live` or `● Offline` so you always know whether data is arriving.
 
@@ -179,6 +181,16 @@ Windows does not give ordinary programs direct access to CPU and SSD sensors, so
 | Write to log when CPU or GPU is above | 80 % |
 | Alert cooldown | 30 s |
 | Refresh interval | 1 s |
+
+**Gaming mode** (Settings → Gaming mode) replaces the thresholds above with these while it is on — all adjustable:
+
+| Setting | Default |
+|---|---|
+| CPU warning / critical | 90 % / 97 % |
+| RAM warning / critical | 90 % / 96 % |
+| GPU warning / critical | 98 % / 100 % |
+
+In gaming mode only the critical limits are written to the log, and GPU temperature is logged from 87 °C instead of 80 °C. Switching the mode on or off is recorded in the log (`[SETTINGS]`).
 
 **Log file**
 
@@ -299,6 +311,7 @@ See [`BUILD.md`](BUILD.md) for the full guide, including the Administrator manif
 | The layout of one page | its file in `lib/pages/` |
 | How temperatures are read | `backend/monitor_backend.py` → `TempReader` |
 | The internet test and its ratings | `backend/netquality.py` → `compute_scores` |
+| The gaming-mode defaults | `lib/gaming.dart` |
 
 ---
 
@@ -319,6 +332,7 @@ sysmon/
 │   ├── updater.dart            GitHub release check, download and install
 │   ├── backend_launcher.dart   Starts the backend in the installed app
 │   ├── net_quality.dart        Internet quality test controller
+│   ├── gaming.dart             Gaming-mode limits
 │   ├── widgets/                Reusable UI pieces (cards, buttons, gauge, charts)
 │   └── pages/                  One file per page
 ├── build_release.bat           Builds the app and backend
@@ -360,6 +374,7 @@ sysmon/
 - [pynvml / nvidia-ml-py](https://pypi.org/project/nvidia-ml-py/) — NVIDIA GPU data
 - [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) — CPU and SSD temperatures (MPL-2.0)
 - [Cloudflare speed test](https://speed.cloudflare.com) — the measurement method of the internet quality test
+- [Inno Setup](https://jrsoftware.org/isinfo.php) — installer
 
 ---
 

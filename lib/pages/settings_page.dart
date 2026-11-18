@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import '../config.dart';
 import '../controller.dart';
+import '../gaming.dart';
 import '../widgets/common.dart';
 import '../widgets/update_card.dart';
 
@@ -20,6 +21,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   // کپی از تنظیمات فعلی؛ اسلایدرها این رو تغییر می‌دن
   Settings draft = monitor.settings.copy();
+  GamingSettings gDraft = monitor.gaming.copy(); // پیش‌نویس آستانه‌های حالت گیمینگ
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,50 @@ class _SettingsPageState extends State<SettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const PageTitle('Settings'),
+
+          // ── حالت گیمینگ ───────────────────────────────────────────────────
+          AppCard(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.sports_esports, size: 18, color: AppColors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('Gaming mode', style: AppText.body)),
+                    // سوییچ فوراً اعمال می‌شه (بدون Apply)
+                    Switch(
+                      value: monitor.gaming.enabled,
+                      activeTrackColor: AppColors.ok,
+                      onChanged: (v) => monitor.setGamingEnabled(v),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                    'While you play, SysMon uses the higher limits below instead of the normal '
+                    'alert thresholds, so a heavy game does not cause false alarms or fill the log. '
+                    'Alerts are not switched off: crossing these limits still shows a banner.',
+                    style: AppText.caption),
+                const SizedBox(height: 10),
+                Text('Limits in gaming mode (%)', style: AppText.small),
+                const SizedBox(height: 6),
+                _slider('CPU warn (gaming)', gDraft.cpuWarn, 10, 100, (v) => gDraft.cpuWarn = v),
+                _slider('CPU critical (gaming)', gDraft.cpuCrit, 10, 100, (v) => gDraft.cpuCrit = v),
+                _slider('RAM warn (gaming)', gDraft.ramWarn, 10, 100, (v) => gDraft.ramWarn = v),
+                _slider('RAM critical (gaming)', gDraft.ramCrit, 10, 100, (v) => gDraft.ramCrit = v),
+                _slider('GPU warn (gaming)', gDraft.gpuWarn, 10, 100, (v) => gDraft.gpuWarn = v),
+                _slider('GPU critical (gaming)', gDraft.gpuCrit, 10, 100, (v) => gDraft.gpuCrit = v),
+                const SizedBox(height: 4),
+                Text(
+                    'In gaming mode only the critical limits are written to the log, and GPU '
+                    'temperature is logged from ${kLogGpuTemp + kGamingLogTempBonus} °C instead of $kLogGpuTemp °C.',
+                    style: AppText.caption),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
 
           // ── آستانه‌های هشدار ─────────────────────────────────────────────
           AppCard(
@@ -83,7 +129,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 label: 'Apply & Save',
                 color: AppColors.ok,
                 textColor: AppColors.bg,
-                onPressed: () => monitor.applySettings(draft),
+                onPressed: () {
+                  monitor.applySettings(draft);
+                  monitor.applyGaming(gDraft);
+                },
               ),
               // ⭐ برگشت به تنظیمات پیش‌فرض: هم اسلایدرها هم برنامه ریست می‌شن
               AppButton(
@@ -93,10 +142,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 textColor: AppColors.text2,
                 onPressed: _confirmReset, // اول می‌پرسه «مطمئنی؟»
               ),
-            const SizedBox(height: 24),
-              UpdateCard(),
             ],
           ),
+
+          // ── آپدیت ────────────────────────────────────────────────────────
+          const SizedBox(height: 24),
+          // عمداً بدون const تا با عوض شدن تم (تیره/روشن) رنگش هم آپدیت بشه
+          UpdateCard(),
         ],
       ),
     );
@@ -127,7 +179,10 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     if (confirmed == true && mounted) {
       monitor.resetSettings();
-      setState(() => draft = Settings());
+      setState(() {
+        draft = Settings();
+        gDraft = monitor.gaming.copy();
+      });
     }
   }
 

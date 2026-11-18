@@ -18,7 +18,7 @@ class CpuPage extends StatelessWidget {
       listenable: monitor,
       builder: (context, _) {
         final Stats? s = monitor.stats;
-        final st = monitor.settings;
+        final st = monitor.active; // توی حالت گیمینگ آستانه‌های بالاتر
         final h = monitor.cpuHistory;
         final avg = h.isEmpty ? 0.0 : h.reduce((a, b) => a + b) / h.length;
 

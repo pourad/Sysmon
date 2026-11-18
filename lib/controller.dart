@@ -20,6 +20,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'api.dart';
 import 'config.dart';
+import 'gaming.dart';
 import 'stats.dart';
 import 'temp_tracker.dart';
 
@@ -43,7 +44,8 @@ class MonitorController extends ChangeNotifier {
   final ApiService api = ApiService();
 
   // ── وضعیت (State) ─────────────────────────────────────────────────────────
-  Settings settings = Settings(); // تنظیمات فعلی
+  Settings settings = Settings(); // تنظیمات عادی (آستانه‌ها و ...)
+  GamingSettings gaming = GamingSettings(); // حالت گیمینگ
   AppTab tab = AppTab.dashboard; // صفحه‌ی انتخاب‌شده
   Stats? stats; // آخرین آمار (قبل از اولین پاسخ null هست)
   bool connected = false; // به بک‌اند وصلیم؟
@@ -97,6 +99,7 @@ class MonitorController extends ChangeNotifier {
   Timer? _bannerTimer;
   bool _busy = false; // جلوگیری از دو درخواست هم‌زمان
   bool _failLogged = false;
+  final DateTime _startedAt = DateTime.now();
   final Map<String, DateTime> _alertTs = {};
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -157,6 +160,44 @@ class MonitorController extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// آستانه‌هایی که «الان» باید استفاده بشن: عادی، یا توی حالت گیمینگ آستانه‌های بالاتر.
+  /// همه‌ی صفحه‌ها (گیج‌ها، رنگ‌ها) و هشدارها از همین استفاده می‌کنن.
+  Settings get active {
+    if (!gaming.enabled) return settings;
+    final s = settings.copy();
+    s.cpuWarn = gaming.cpuWarn;
+    s.cpuCrit = gaming.cpuCrit;
+    s.ramWarn = gaming.ramWarn;
+    s.ramCrit = gaming.ramCrit;
+    s.gpuWarn = gaming.gpuWarn;
+    s.gpuCrit = gaming.gpuCrit;
+    // توی حالت گیمینگ فقط وقتی به حد «بحرانی» برسه توی فایل لاگ نوشته می‌شه
+    s.logCpu = gaming.cpuCrit;
+    s.logRam = gaming.ramCrit;
+    s.logGpu = gaming.gpuCrit;
+    return s;
+  }
+
+  /// روشن / خاموش کردن حالت گیمینگ (سوییچ توی Settings) — فوراً اعمال می‌شه
+  void setGamingEnabled(bool on) {
+    gaming.enabled = on;
+    logEvent(
+        on
+            ? 'Gaming mode ON — higher alert limits are in use.'
+            : 'Gaming mode OFF — normal alert limits are back.',
+        LogTag.info);
+    _fileLog('[SETTINGS] Gaming mode ${on ? 'ON' : 'OFF'}');
+    notifyListeners();
+  }
+
+  /// ذخیره‌ی آستانه‌های حالت گیمینگ (دکمه‌ی Apply & Save)
+  void applyGaming(GamingSettings g) {
+    final on = gaming.enabled; // کلید روشن/خاموش جداست و با Apply عوض نمی‌شه
+    gaming = g.copy();
+    gaming.enabled = on;
+    notifyListeners();
+  }
+
   /// ذخیره‌ی تنظیمات جدید (دکمه‌ی Apply & Save)
   void applySettings(Settings s) {
     settings = s.copy();
@@ -169,6 +210,7 @@ class MonitorController extends ChangeNotifier {
   /// برگشتن به تنظیمات پیش‌فرض (دکمه‌ی Reset to defaults)
   void resetSettings() {
     settings = Settings(); // یک نمونه‌ی تازه = همون مقدارهای پیش‌فرض config.dart
+    gaming = GamingSettings(enabled: gaming.enabled); // آستانه‌های گیمینگ هم پیش‌فرض (روشن/خاموش بودنش عوض نمی‌شه)
     _restartTimer();
     logEvent('Settings reset to defaults.', LogTag.info);
     _fileLog('[SETTINGS] User reset settings to defaults.');
@@ -306,7 +348,8 @@ class MonitorController extends ChangeNotifier {
       if (tab == AppTab.ram) await _refreshTopProcs();
     } catch (e) {
       connected = false;
-      if (!_failLogged) {
+      // توی ۱۵ ثانیه‌ی اول هنوز بک‌اند داره بالا میاد، پیغام نده
+      if (!_failLogged && DateTime.now().difference(_startedAt).inSeconds > 15) {
         _failLogged = true;
         logEvent('Backend not reachable — is monitor_backend.py running?',
             LogTag.warn);
@@ -317,7 +360,7 @@ class MonitorController extends ChangeNotifier {
   }
 
   void _checkAlerts(Stats s) {
-    final st = settings;
+    final st = active; // توی حالت گیمینگ آستانه‌های بالاتر
     final cpu = s.cpu;
     final ram = s.ramPct;
     final gpu = s.gpu ?? 0;
@@ -341,10 +384,14 @@ class MonitorController extends ChangeNotifier {
     if (cpu >= st.logCpu) reasons.add('CPU=${cpu.toStringAsFixed(0)}%');
     if (ram >= st.logRam) reasons.add('RAM=${ram.toStringAsFixed(0)}%');
     if (gpu > 0 && gpu >= st.logGpu) reasons.add('GPU=${gpu.toStringAsFixed(0)}%');
-    if (s.gpuTemp != null && s.gpuTemp! >= kLogGpuTemp) {
+    final tempLimit = gaming.enabled ? kLogGpuTemp + kGamingLogTempBonus : kLogGpuTemp;
+    if (s.gpuTemp != null && s.gpuTemp! >= tempLimit) {
       reasons.add('GPU_T=${s.gpuTemp}°C');
     }
-    if (reasons.isNotEmpty) _fileLog('[PRESSURE] ${reasons.join(', ')}');
+    if (reasons.isNotEmpty) {
+      final tag = gaming.enabled ? '[PRESSURE] (gaming mode)' : '[PRESSURE]';
+      _fileLog('$tag ${reasons.join(', ')}');
+    }
   }
 
   /// اگه پروسه‌ای که نظارتش می‌کردیم بسته شده باشه
